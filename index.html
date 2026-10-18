@@ -1,0 +1,783 @@
+<!doctype html>
+<html lang="zh-HK">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Chelsea 默書練習</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="默書練習">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#f6f7f2">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+/* Layout: one calm column like a 默書簿 page; the 田字格 number box is the focal object during a test */
+:root{
+  --paper:#f6f7f2; --card:#ffffff; --ink:#1f2a3a; --mute:#647083; --rule:#dde2d6; --grid:#c3cdb9;
+  --accent:#2c5ea8; --accent-ink:#ffffff; --accent-soft:#e7eef9;
+  --red:#c13c2b; --red-soft:#fbe8e4; --ok:#2e7a4c; --ok-soft:#e4f2e9; --warn-soft:#fff3d2; --warn-line:#e5cd84;
+  --f-ui:-apple-system,BlinkMacSystemFont,"PingFang HK","PingFang TC","Microsoft JhengHei","Noto Sans TC",sans-serif;
+  --f-en:"Avenir Next","Segoe UI",-apple-system,sans-serif;
+  --f-kai:"Kaiti TC","STKaiti","BiauKai","DFKai-SB","Noto Serif TC",serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --paper:#15181d; --card:#1e232b; --ink:#e7e9e4; --mute:#9aa3b2; --rule:#2e3540; --grid:#3d4a3a;
+  --accent:#8db0ef; --accent-ink:#0f1726; --accent-soft:#233149;
+  --red:#f08b7b; --red-soft:#3a2420; --ok:#7fcb9b; --ok-soft:#1e3227; --warn-soft:#3a3220; --warn-line:#6b5a2a; color-scheme:dark}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.55 var(--f-ui);
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+[hidden]{display:none!important}
+.wrap{max-width:820px;margin:0 auto;padding-block:16px 48px;display:flex;flex-direction:column;gap:14px}
+h1{font-size:24px;margin:0;text-wrap:balance}
+h2{font-size:19px;margin:0;text-wrap:balance}
+h3{font-size:14px;margin:10px 0 2px;color:var(--accent);letter-spacing:.04em}
+p{margin:0}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.today{color:var(--mute);font-size:14px;font-variant-numeric:tabular-nums}
+.card{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.card.next{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.meta{color:var(--mute);font-size:14px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.row.center{justify-content:center}
+button{font:inherit;font-size:17px;min-height:48px;border:1px solid var(--rule);background:var(--card);color:var(--ink);border-radius:12px;padding:10px 16px;cursor:pointer;touch-action:manipulation}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+button.big{font-size:20px;padding:14px 28px}
+button.danger{color:var(--red)}
+button.armed{background:var(--red);color:var(--card);border-color:var(--red)}
+button:disabled{opacity:.35;cursor:default}
+.chip{display:inline-flex;align-items:center;font-size:13px;font-weight:600;padding:3px 10px;border-radius:99px;background:var(--accent-soft);color:var(--accent);white-space:nowrap}
+.chip.today{background:var(--red-soft);color:var(--red)}
+.chip.done{background:var(--ok-soft);color:var(--ok)}
+.chip.lang{background:transparent;border:1px solid var(--rule);color:var(--mute);font-weight:500}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.warn{background:var(--warn-soft);border:1px solid var(--warn-line);border-radius:12px;padding:12px 14px;font-size:15px}
+.empty{text-align:center;padding:28px 16px;color:var(--mute)}
+details summary{cursor:pointer;color:var(--mute);padding:8px 0;font-size:15px}
+details .list{display:flex;flex-direction:column;gap:12px;margin-top:8px}
+label.opt{display:flex;gap:12px;align-items:center;padding:8px 0;min-height:44px}
+input[type=checkbox],input[type=radio]{width:22px;height:22px;accent-color:var(--accent);flex:none}
+select,textarea{font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--rule);border-radius:10px;padding:10px;max-width:100%}
+textarea{width:100%;min-height:380px;font:15px/1.55 ui-monospace,Menlo,Consolas,monospace}
+textarea.short{min-height:160px}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.stage{align-items:center;text-align:center;padding:24px 16px;gap:12px}
+.sec-name{color:var(--mute);font-size:15px}
+.tz{width:132px;height:132px;border:3px solid var(--ink);position:relative;display:grid;place-items:center;background:var(--card)}
+.tz::before,.tz::after{content:"";position:absolute;border-color:var(--grid);border-style:dashed}
+.tz::before{left:50%;top:0;bottom:0;border-width:0 0 0 2px}
+.tz::after{top:50%;left:0;right:0;border-width:2px 0 0 0}
+.tz span{position:relative;z-index:1;font-size:64px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums;line-height:1}
+.of{color:var(--mute);font-size:15px;font-variant-numeric:tabular-nums}
+.bar{width:100%;height:10px;background:var(--rule);border-radius:99px;overflow:hidden}
+.bar>i{display:block;height:100%;width:0;background:var(--accent)}
+.status{font-size:20px;min-height:32px}
+.peek{font-size:28px;min-height:40px}
+.timer{font-size:76px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+.prompt{font-size:18px;text-align:left;background:var(--accent-soft);border-radius:12px;padding:12px 14px;width:100%}
+.item{display:flex;gap:12px;align-items:center;padding:12px 8px;border-bottom:1px solid var(--rule);cursor:pointer;user-select:none;-webkit-user-select:none;min-height:52px}
+.item:last-child{border-bottom:0}
+.item .n{color:var(--mute);min-width:1.8em;font-variant-numeric:tabular-nums}
+.item .ans{font-size:21px;min-width:0;overflow-wrap:anywhere}
+.item .mk{margin-left:auto;font-size:22px;color:var(--ok);flex:none}
+.item.bad{background:var(--red-soft)}
+.item.bad .ans{color:var(--red)}
+.item.bad .mk{color:var(--red)}
+.zh{font-family:var(--f-kai)}
+.en{font-family:var(--f-en)}
+.refs{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:18px}
+.score{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+code{background:var(--accent-soft);padding:1px 6px;border-radius:6px;font-size:14px}
+ul,ol{padding-left:22px;margin:4px 0}
+.foot{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:8px}
+.foot button{font-size:15px;min-height:40px;color:var(--mute);background:transparent}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--paper);padding:12px 18px;border-radius:12px;font-size:15px;max-width:calc(100% - 32px);z-index:20}
+@media (max-width:480px){.tz{width:108px;height:108px}.tz span{font-size:52px}.timer{font-size:60px}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<div id="toast" hidden></div>
+
+<script>
+/* ================= 初始內容（第一次打開時載入） ================= */
+const SEED = [
+`# English Dictation 3 (Unit 2 & 3)
+@date 2026-10-22
+@lang en
+## Part A1 (80%) | passage
+I'm waiting for the high jump. Peter and Ricky are running in the 100 m race at the moment.
+Ricky is fast. Peter is faster and stronger. I'm slower than him in all the races!
+Rosa won the long jump. I came second in the high jump. The last event was the relay race.
+Are you going to take part in any competitions?
+## Part A2 Recitation (20%) | recite 180
+Kangaroos live in different parts of Australia.
+They mainly eat grass, flowers and leaves.
+They usually hop at about 30 kilometres an hour on two legs.
+## Part B: Adjectives | open 120
+Q: Part B. Theme dictation. Adjectives. For example: fast, long, high. You have two minutes.
+// 前三個是默書紙上的例子，其餘是參考答案
+fast
+long
+high
+slow
+strong
+weak
+short
+tall
+big
+small
+heavy
+light
+quick
+brave
+happy
+excited
+tired
+careful
+healthy
+friendly
+clever
+beautiful`,
+`# 中文語評
+@date 2026-10-27
+@lang zh
+## 《狐狸與烏鴉》應用詞語 | 詞語
+聽信
+虛偽
+品嘗
+迫不得已
+警惕
+狡猾
+糊塗
+貪心
+## 《狐狸與烏鴉》認讀詞語 | 詞語 off
+牢牢
+好不容易
+上當
+可憐兮兮
+奄奄一息
+痛改前非
+負荊請罪
+假惺惺
+裝模作樣
+## 《狐狸與烏鴉》課文段落 | 段落
+誰知狐狸這個狡猾的傢伙，只是裝模作樣地將手中的肉拋得很低、很低。最後，大肉塊和小肉塊全落入狐狸的手裏。糊塗的烏鴉又被騙了。現在，牠應該牢牢記住第二個教訓：千萬不要貪心。
+## 《感恩》應用詞語 | 詞語
+不離不棄
+撫養
+治療
+不由自主
+歧視
+困擾
+一鳴驚人
+動彈不得
+抓緊
+## 《感恩》認讀詞語 | 詞語 off
+確診
+張力
+協調
+痙攣
+隔膜
+缺陷
+賞識
+平衡
+積勞成疾
+提拔
+寵愛
+## 《感恩》課文段落 | 段落
+我感恩遇上最愛我的父母、伴我成長的恩師和好友、提拔我的教練……感激你們，讓我萬千寵愛在一身！`,
+`# English Dictation 1 (Unit 1)
+@date 2026-09-29
+@lang en
+## Part A | sentences
+What do you enjoy doing with your family members?
+I enjoy playing Chinese chess.
+I often play it with my grandpa.
+He always beats me but I never give up!
+I enjoy doing sport.
+My brother taught me how to go rock climbing.
+I always wear my helmet, so I seldom hurt my head.
+## Part B: Hobbies (in collocations) | open 120
+Q: Part B. Theme dictation. Hobbies, in collocations. For example: play Chinese chess, do sport, go rock climbing. You have two minutes.
+play basketball
+play football
+play badminton
+play table tennis
+play Chinese chess
+play the piano
+play computer games
+do sport
+do yoga
+do karate
+do gymnastics
+go swimming
+go rock climbing
+go hiking
+go cycling
+go skating
+go jogging
+go camping
+go fishing`
+];
+
+/* ================= 儲存（只存在這部 iPad） ================= */
+const KEY = 'chelsea-dictation-v1', PREF = 'chelsea-dictation-prefs';
+const ls = {
+  get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
+};
+let DB = ls.get(KEY);
+if (!DB || !Array.isArray(DB.sets)) {
+  DB = { sets: SEED.map((src, i) => ({ id: 's' + Date.now().toString(36) + i, src, updatedAt: Date.now() + i })), mistakes: {}, history: {} };
+  ls.set(KEY, DB);
+}
+DB.mistakes = DB.mistakes || {}; DB.history = DB.history || {};
+function save() { if (!ls.set(KEY, DB)) toast('儲存失敗：請不要用無痕瀏覽。'); }
+const SET = Object.assign({ rate: 0.85, times: 1, readPunct: true, auto: true, gap: 1, vZh: '', vEn: '', exam: true, shuffle: false }, ls.get(PREF) || {});
+function savePrefs() { ls.set(PREF, SET); }
+try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
+
+/* ================= 小工具 ================= */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const wait = ms => new Promise(r => setTimeout(r, ms));
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+let screen = 'home';
+function show(h) { $('#app').innerHTML = h; window.scrollTo(0, 0); }
+let toastT;
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 3200); }
+function arm(btn, label, fn) {
+  if (btn.dataset.armed) { fn(); return; }
+  const orig = btn.textContent; btn.dataset.armed = '1'; btn.classList.add('armed'); btn.textContent = label;
+  setTimeout(() => { if (btn.isConnected) { delete btn.dataset.armed; btn.classList.remove('armed'); btn.textContent = orig; } }, 3000);
+}
+const langClass = l => l === 'zh' ? 'zh' : 'en';
+const newId = () => 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+
+/* 螢幕常亮（默書時 iPad 不會自動鎖機） */
+let wakeLock = null;
+async function keepAwake(on) {
+  try {
+    if (on && 'wakeLock' in navigator && !wakeLock) { wakeLock = await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release', () => { wakeLock = null; }); }
+    if (!on && wakeLock) { await wakeLock.release(); wakeLock = null; }
+  } catch (e) {}
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && screen === 'test') keepAwake(true); });
+
+/* ================= 日期 ================= */
+const WD = ['日', '一', '二', '三', '四', '五', '六'];
+const dayStart = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+function parseDateStr(s) {
+  s = String(s || '').trim();
+  let m = s.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})$/);
+  if (m) return new Date(+m[1], m[2] - 1, +m[3]);
+  m = s.match(/^(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?$/);
+  if (m) {
+    const mon = +m[2];
+    let y;
+    if (m[3]) y = +m[3] < 100 ? 2000 + +m[3] : +m[3];
+    else { const now = new Date(); const base = now.getMonth() >= 7 ? now.getFullYear() : now.getFullYear() - 1; y = mon >= 8 ? base : base + 1; }
+    return new Date(y, mon - 1, +m[1]);
+  }
+  return null;
+}
+const daysUntil = d => Math.round((dayStart(d) - dayStart(new Date())) / 864e5);
+const fmtDate = d => `${d.getMonth() + 1}月${d.getDate()}日（${WD[d.getDay()]}）`;
+const isToday = t => daysUntil(new Date(t)) === 0;
+
+/* ================= 內容格式 ================= */
+function parseSet(src) {
+  const set = { title: '未命名', lang: 'zh', date: null, sections: [] };
+  let sec = null;
+  for (const raw of String(src).split(/\r?\n/)) {
+    const line = raw.trim();
+    if (!line || line.startsWith('//')) continue;
+    if (line.startsWith('## ')) {
+      const [name, spec = ''] = line.slice(3).split('|').map(s => s.trim());
+      let type = 'words', secs = null, on = true;
+      for (const t of spec.split(/\s+/).filter(Boolean)) {
+        if (/^(段落|課文|passage)$/i.test(t)) type = 'passage';
+        else if (/^(句子|sentences?)$/i.test(t)) type = 'sentences';
+        else if (/^(開放|open)$/i.test(t)) type = 'open';
+        else if (/^(背默|recite|recitation)$/i.test(t)) type = 'recite';
+        else if (/^(詞語|words?)$/i.test(t)) type = 'words';
+        else if (/^\d+$/.test(t)) secs = +t;
+        else if (/^off$/i.test(t)) on = false;
+      }
+      if (secs == null) secs = type === 'recite' ? 180 : 120;
+      sec = { name, type, secs, on, items: [], prompt: '' };
+      set.sections.push(sec); continue;
+    }
+    if (line.startsWith('# ')) { set.title = line.slice(2).trim(); continue; }
+    if (line.startsWith('@lang')) { set.lang = /en/i.test(line) ? 'en' : 'zh'; continue; }
+    if (line.startsWith('@date')) { set.date = parseDateStr(line.slice(5)); continue; }
+    if (!sec) { sec = { name: '內容', type: 'words', secs: 120, on: true, items: [], prompt: '' }; set.sections.push(sec); }
+    if (sec.type === 'open' && /^(Q|題目)\s*[:：]/i.test(line)) { sec.prompt = line.replace(/^(Q|題目)\s*[:：]\s*/i, ''); continue; }
+    sec.items.push(line);
+  }
+  return set;
+}
+function getSet(id) { const s = DB.sets.find(x => x.id === id); return s ? Object.assign({ id: s.id, src: s.src }, parseSet(s.src)) : null; }
+/* 一次貼上多份：以「# 標題」行分開 */
+function splitSets(text) {
+  const out = []; let cur = [];
+  String(text).replace(/```[a-z]*\n?/gi, '').split(/\r?\n/).forEach(l => {
+    if (/^#\s/.test(l.trim()) && cur.some(x => /^#\s/.test(x.trim()))) { out.push(cur.join('\n')); cur = []; }
+    cur.push(l);
+  });
+  if (cur.join('').trim()) out.push(cur.join('\n'));
+  return out.map(s => s.trim()).filter(s => /^#\s/m.test(s));
+}
+
+/* ================= 標點與分句 ================= */
+const PZH = { '，': '逗號', '。': '句號', '、': '頓號', '：': '冒號', '；': '分號', '！': '感嘆號', '？': '問號', '「': '開引號', '」': '閂引號', '『': '開引號', '』': '閂引號' };
+const PEN = { ',': 'comma', '.': 'full stop', '?': 'question mark', '!': 'exclamation mark', ':': 'colon', ';': 'semicolon' };
+function punctWords(p, lang) {
+  if (lang === 'zh') return [...p.replace(/…+/g, '§')].map(c => c === '§' ? '省略號' : PZH[c]).filter(Boolean).join('，');
+  return [...p.replace(/\.{3,}|…+/g, '§')].map(c => c === '§' ? 'dot dot dot' : PEN[c]).filter(Boolean).join(', ');
+}
+function chunks(t, lang) {
+  const P = lang === 'zh' ? /[，。、：；！？…「」『』,!?:;]/ : /[,.!?:;…]/;
+  const out = []; let cur = '', pun = '';
+  const flush = () => { if (cur.trim()) out.push({ text: cur.trim(), punct: pun }); else if (out.length) out[out.length - 1].punct += pun; cur = ''; pun = ''; };
+  for (const ch of t) { if (P.test(ch)) pun += ch; else { if (pun) flush(); cur += ch; } }
+  if (cur.trim() || pun) flush();
+  return out;
+}
+function partsFor(line, lang, readP) {
+  const parts = [];
+  for (const c of chunks(line, lang)) {
+    parts.push(c.text);
+    if (readP && c.punct) { const w = punctWords(c.punct, lang); if (w) parts.push(w); }
+  }
+  return parts.length ? parts : [line];
+}
+function gapFor(ans, lang) {
+  if (lang === 'zh') { const n = ans.replace(/[^㐀-鿿]/g, '').length; return (n * 1400 + 2500) * SET.gap; }
+  const n = ans.split(/\s+/).filter(Boolean).length; return (n * 1100 + 3000) * SET.gap;
+}
+function splitEnSentences(p) { return (p.match(/[^.!?]+[.!?]+["']?|[^.!?]+$/g) || []).map(x => x.trim()).filter(Boolean); }
+function buildSteps(set, secIdx, opt) {
+  const L = set.lang, steps = [];
+  secIdx.forEach(si => {
+    const sec = set.sections[si];
+    if (sec.type === 'open') { steps.push({ kind: 'open', sec: sec.name, lang: L, prompt: sec.prompt || sec.name, secs: sec.secs, ref: sec.items.slice() }); return; }
+    if (sec.type === 'recite') { steps.push({ kind: 'recite', sec: sec.name, lang: L, secs: sec.secs, lines: sec.items.slice() }); return; }
+    let lines = [];
+    if (sec.type === 'passage') {
+      sec.items.forEach(p => {
+        if (L === 'zh') chunks(p, 'zh').forEach(c => lines.push(c.text + c.punct));
+        else splitEnSentences(p).forEach(x => lines.push(x));
+      });
+    } else { lines = sec.items.slice(); if (opt.shuffle && sec.type === 'words') shuffle(lines); }
+    lines.forEach(t => steps.push({ kind: 'say', sec: sec.name, lang: L, parts: partsFor(t, L, opt.readPunct), answer: t, gap: gapFor(t, L) }));
+  });
+  return steps;
+}
+
+/* ================= 語音 ================= */
+let voicesReady = false;
+function allVoices() { try { return speechSynthesis.getVoices(); } catch (e) { return []; } }
+function voicesFor(l) {
+  const vs = allVoices();
+  return l === 'zh'
+    ? vs.filter(v => /zh[-_]HK|yue/i.test(v.lang) || /粵|粤|Cantonese|Hong Kong|香港/i.test(v.name))
+    : vs.filter(v => /^en/i.test(v.lang));
+}
+function pickVoice(l) {
+  const list = voicesFor(l), saved = l === 'zh' ? SET.vZh : SET.vEn;
+  const v = list.find(x => x.name === saved); if (v) return v;
+  const score = x => (/Natural|Online|Neural|Premium|Enhanced|增強|增强|優化|优化/i.test(x.name) ? 4 : 0) + (/Google/i.test(x.name) ? 2 : 0) + (l === 'en' && /GB/i.test(x.lang) ? 3 : 0);
+  return list.slice().sort((a, b) => score(b) - score(a))[0] || null;
+}
+const keep = [];
+function say(text, lang) {
+  return new Promise(res => {
+    if (!('speechSynthesis' in window)) return res();
+    const u = new SpeechSynthesisUtterance(text);
+    const v = pickVoice(lang);
+    if (v) u.voice = v;
+    u.lang = v ? v.lang : (lang === 'zh' ? 'zh-HK' : 'en-GB');
+    u.rate = SET.rate;
+    let done = false;
+    const t = setTimeout(() => fin(), 4000 + text.length * (lang === 'zh' ? 800 : 250) / SET.rate);
+    function fin() { if (!done) { done = true; clearTimeout(t); res(); } }
+    u.onend = fin; u.onerror = fin;
+    keep.push(u); if (keep.length > 30) keep.shift();
+    speechSynthesis.speak(u);
+  });
+}
+function unlockSpeech() { try { const u = new SpeechSynthesisUtterance(' '); u.volume = 0; speechSynthesis.speak(u); } catch (e) {} }
+function onVoices() { if (allVoices().length) voicesReady = true; if (screen === 'home') home(); if (screen === 'settings') settings(); }
+if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = onVoices;
+setTimeout(() => { voicesReady = true; onVoices(); }, 1500);
+
+/* ================= 主頁 ================= */
+function countdownChip(days) {
+  if (days == null) return '<span class="chip">未定日期</span>';
+  if (days === 0) return '<span class="chip today">今天默書</span>';
+  if (days === 1) return '<span class="chip today">明天默書</span>';
+  if (days > 1) return `<span class="chip">還有 ${days} 天</span>`;
+  return `<span class="chip lang">已默完</span>`;
+}
+function setCard(x, isNext) {
+  const { s, set, days } = x;
+  const hist = DB.history[s.id] || [];
+  const last = hist.slice(-1)[0];
+  const practicedToday = hist.some(h => isToday(h.t));
+  const mis = (DB.mistakes[s.id] || []).length;
+  return `<div class="card ${isNext ? 'next' : ''}">
+    <div class="chips">${countdownChip(days)}<span class="chip lang">${set.lang === 'zh' ? '中文 · 粵語' : 'English'}</span>${practicedToday ? '<span class="chip done">今天已練 ✓</span>' : ''}</div>
+    <h2>${esc(set.title)}</h2>
+    <div class="meta">${set.date ? fmtDate(set.date) + '　' : ''}${set.sections.map(t => esc(t.name)).join(' · ')}</div>
+    ${last ? `<div class="meta">上次${last.mistakes ? '錯題重默' : '練習'}：答對 ${last.total - last.wrong} / ${last.total}</div>` : ''}
+    <div class="row"><button class="pri" onclick="setup('${s.id}')">開始默書</button>
+    ${mis ? `<button onclick="setup('${s.id}',true)">錯題重默（${mis}）</button>` : ''}
+    <button onclick="edit('${s.id}')">編輯</button></div></div>`;
+}
+function home() {
+  stopRun(); screen = 'home';
+  let h = `<div class="top"><h1>Chelsea 默書練習</h1><span class="today">今天 ${fmtDate(new Date())}</span></div>`;
+  if (!('speechSynthesis' in window)) h += `<div class="warn">這個瀏覽器不能朗讀，請用 Safari 打開。</div>`;
+  else if (voicesReady && !voicesFor('zh').length) h += `<div class="warn">未找到<b>粵語</b>語音，中文默書可能會讀成普通話。<a href="#" onclick="settings();return false">按這裏看安裝方法</a></div>`;
+  const items = DB.sets.map(s => { const set = parseSet(s.src); return { s, set, days: set.date ? daysUntil(set.date) : null }; });
+  const upcoming = items.filter(x => x.days == null || x.days >= 0).sort((a, b) => (a.days ?? 9999) - (b.days ?? 9999) || (a.s.updatedAt || 0) - (b.s.updatedAt || 0));
+  const past = items.filter(x => x.days != null && x.days < 0).sort((a, b) => b.days - a.days);
+  if (!items.length) h += `<div class="card empty">還沒有默書。<br>按下面「新增默書」貼上內容，就會按默書日期排好。</div>`;
+  upcoming.forEach((x, i) => { h += setCard(x, i === 0 && x.days != null); });
+  if (past.length) h += `<details><summary>已默完（${past.length}）</summary><div class="list">${past.map(x => setCard(x, false)).join('')}</div></details>`;
+  h += `<div class="foot"><button onclick="addScreen()">＋ 新增默書</button><button onclick="settings()">🔊 語音設定</button><button onclick="backup()">備份 / 還原</button></div>`;
+  show(h);
+}
+
+/* ================= 新增（貼上整理好的內容） ================= */
+function addScreen() {
+  stopRun(); screen = 'add';
+  show(`<div class="top"><h1>新增默書</h1></div>
+  <div class="card">
+    <p>把整理好的默書內容貼在下面。可以一次貼幾份，每份以 <code># 標題</code> 開頭。</p>
+    <textarea id="paste" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="# 中文默書&#10;@date 3/11&#10;@lang zh&#10;## 第5課 應用詞語 | 詞語&#10;……"></textarea>
+    <div class="row"><button class="pri" onclick="doAdd()">加入</button><button onclick="edit(null)">用範本自己寫</button><button onclick="home()">取消</button></div>
+    <div class="meta">如果標題和日期都跟已有的一樣，會更新那一份，不會重複。</div>
+  </div>`);
+}
+function doAdd() {
+  const parts = splitSets($('#paste').value);
+  if (!parts.length) { toast('沒有找到內容。每份要以「# 標題」開頭。'); return; }
+  let added = 0, updated = 0;
+  parts.forEach(src => {
+    const p = parseSet(src);
+    if (!p.sections.some(x => x.items.length || x.type === 'open')) return;
+    const same = DB.sets.find(s => { const q = parseSet(s.src); return q.title === p.title && String(q.date) === String(p.date); });
+    if (same) { same.src = src; same.updatedAt = Date.now(); updated++; }
+    else { DB.sets.push({ id: newId(), src, updatedAt: Date.now() }); added++; }
+  });
+  save();
+  toast(`已加入 ${added} 份${updated ? `，更新 ${updated} 份` : ''}`);
+  home();
+}
+
+/* ================= 備份 / 還原 ================= */
+function backup() {
+  stopRun(); screen = 'backup';
+  const data = JSON.stringify({ app: 'chelsea-dictation', v: 1, t: Date.now(), sets: DB.sets, mistakes: DB.mistakes, history: DB.history });
+  show(`<div class="top"><h1>備份 / 還原</h1></div>
+  <div class="card"><h2>備份</h2><p class="meta">內容、錯題和成績只存在這部 iPad。偶爾按「複製備份」，貼到備忘錄或傳給自己保存。</p>
+    <textarea id="bk" class="short" readonly>${esc(data)}</textarea>
+    <div class="row"><button class="pri" onclick="copyBk()">複製備份</button></div></div>
+  <div class="card"><h2>還原</h2><p class="meta">貼上之前複製的備份，會<b>取代</b>這部機上的全部內容。</p>
+    <textarea id="rs" class="short" placeholder="貼上備份內容"></textarea>
+    <div class="row"><button class="danger" onclick="arm(this,'再按一次確認還原',doRestore)">還原</button><button onclick="home()">返回</button></div></div>`);
+}
+async function copyBk() {
+  const t = $('#bk');
+  try { await navigator.clipboard.writeText(t.value); toast('已複製'); }
+  catch (e) { t.focus(); t.select(); t.setSelectionRange(0, t.value.length); toast('已選取，請按「拷貝」'); }
+}
+function doRestore() {
+  try {
+    const d = JSON.parse($('#rs').value);
+    if (!d || !Array.isArray(d.sets)) throw 0;
+    DB = { sets: d.sets, mistakes: d.mistakes || {}, history: d.history || {} };
+    save(); toast('已還原'); home();
+  } catch (e) { toast('備份內容不完整，請重新複製整段再貼上。'); }
+}
+
+/* ================= 默書設定 ================= */
+function secDesc(x) {
+  if (x.type === 'open') return `自由默寫 ${Math.round(x.secs / 6) / 10} 分鐘`;
+  if (x.type === 'recite') return `背默 ${Math.round(x.secs / 6) / 10} 分鐘`;
+  return x.items.length + (x.type === 'words' ? ' 個' : ' 段');
+}
+function setup(id, mistakes) {
+  screen = 'setup';
+  const set = getSet(id); if (!set) return home();
+  let h = `<div class="top"><h1>${esc(set.title)}${mistakes ? '　錯題重默' : ''}</h1></div><div class="card">`;
+  if (!mistakes) {
+    h += `<h2>考哪些部分</h2>` + set.sections.map((x, i) => `<label class="opt"><input type="checkbox" name="sec" id="sec${i}" value="${i}" ${x.on && (x.items.length || x.type === 'open') ? 'checked' : ''}> <span>${esc(x.name)} <span class="meta">${secDesc(x)}</span></span></label>`).join('');
+  } else h += `<div class="meta">共 ${(DB.mistakes[id] || []).length} 個錯題</div>`;
+  h += `</div><div class="card"><h2>模式</h2>
+    <label class="opt"><input type="radio" name="mode" id="mExam" value="exam" ${SET.exam ? 'checked' : ''}> <span>考試模式<br><span class="meta">每題只讀一次，不能重聽、不能偷看</span></span></label>
+    <label class="opt"><input type="radio" name="mode" id="mPrac" value="prac" ${!SET.exam ? 'checked' : ''}> <span>練習模式<br><span class="meta">可以重聽、偷看答案、聽背默範文</span></span></label>
+    <label class="opt"><input type="checkbox" id="shuffle" ${SET.shuffle ? 'checked' : ''}> 詞語打亂次序</label>
+    <label class="opt"><input type="checkbox" id="readPunct" ${SET.readPunct ? 'checked' : ''}> 讀出標點（逗號、句號 / comma, full stop）</label>
+    <label class="opt"><input type="checkbox" id="auto" ${SET.auto ? 'checked' : ''}> 自動讀下一題（像老師一樣不停）</label>
+    <label class="opt">每題讀 <select id="times"><option value="1">1 次</option><option value="2">2 次</option></select></label>
+    <label class="opt">書寫時間 <select id="gap"><option value="1.5">寬鬆</option><option value="1">正常</option><option value="0.7">緊湊（練速度）</option></select></label>
+    </div><div class="row"><button class="pri big" onclick="start('${id}',${!!mistakes})">▶ 開始</button><button onclick="home()">返回</button></div>
+    <div class="meta">準備好默書簿和筆，把 iPad 聲量調大。</div>`;
+  show(h);
+  $('#times').value = String(SET.times); $('#gap').value = String(SET.gap);
+}
+function start(id, mistakes) {
+  unlockSpeech();
+  SET.exam = $('#mExam').checked;
+  SET.shuffle = $('#shuffle').checked; SET.readPunct = $('#readPunct').checked; SET.auto = $('#auto').checked;
+  SET.times = +$('#times').value; SET.gap = +$('#gap').value; savePrefs();
+  const set = getSet(id);
+  let steps;
+  if (mistakes) {
+    steps = (DB.mistakes[id] || []).map(s => ({ kind: 'say', sec: s.sec, lang: s.lang, answer: s.answer, parts: partsFor(s.answer, s.lang, SET.readPunct), gap: gapFor(s.answer, s.lang) }));
+    if (SET.shuffle) shuffle(steps);
+  } else {
+    const idx = [...document.querySelectorAll('input[name=sec]:checked')].map(x => +x.value);
+    steps = buildSteps(set, idx, SET);
+  }
+  if (!steps.length) { toast('沒有可默的內容。請勾選部分，或先編輯內容。'); return; }
+  startRun(set, steps, mistakes);
+}
+
+/* ================= 默書進行 ================= */
+let run = null;
+function stopRun() { if (run) { run.token++; clearInterval(run.timer); } try { speechSynthesis.cancel(); } catch (e) {} run = null; keepAwake(false); }
+function startRun(set, steps, isMistakes) {
+  stopRun();
+  run = { set, steps, isMistakes, i: 0, token: 0, paused: false, timer: null, exam: SET.exam };
+  screen = 'test'; keepAwake(true);
+  playStep();
+}
+function setStatus(t) { const e = $('#st'); if (e) e.textContent = t; }
+function fmt(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+function renderTest() {
+  const r = run, s = r.steps[r.i];
+  const sayCount = r.steps.filter(x => x.kind === 'say').length;
+  const no = r.steps.slice(0, r.i + 1).filter(x => x.kind === 'say').length;
+  let stage;
+  if (s.kind === 'open') {
+    stage = `<div class="sec-name">${esc(s.sec)}</div><div class="prompt ${langClass(s.lang)}">${esc(s.prompt)}</div><div class="timer" id="timer">${fmt(s.secs * 1000)}</div><div class="meta">在默書簿上寫，時間到會自動結束</div>`;
+  } else if (s.kind === 'recite') {
+    stage = `<div class="sec-name">${esc(s.sec)}</div><div class="prompt">背默：憑記憶把整段寫出來，老師不會讀。</div><div class="timer" id="timer">${fmt(s.secs * 1000)}</div><div class="meta">寫完可按「下一部分」</div>`;
+  } else {
+    stage = `<div class="sec-name">${esc(s.sec)}</div><div class="tz"><span>${no}</span></div><div class="of">共 ${sayCount} 題</div>`;
+  }
+  const last = r.i === r.steps.length - 1;
+  show(`<div class="top"><h1>${esc(r.set.title)}</h1></div>
+    <div class="card stage">${stage}
+      <div class="bar"><i id="bar"></i></div><div class="status" id="st"></div><div class="peek ${langClass(s.lang)}" id="peek"></div></div>
+    <div class="row center">
+      <button id="pauseBtn" onclick="togglePause()">⏸ 暫停</button>
+      ${s.kind === 'say' ? `<button onclick="replay()" ${r.exam ? 'disabled' : ''}>🔁 重聽</button>` : ''}
+      ${s.kind === 'say' && !r.exam ? `<button onclick="peek()">👀 偷看</button>` : ''}
+      ${s.kind === 'recite' && !r.exam ? `<button onclick="hearRecite()">🔊 聽範文</button>` : ''}
+      <button class="pri" onclick="next()">${last ? '完成 ✓' : (s.kind === 'say' ? '下一題 ▶' : '下一部分 ▶')}</button>
+      <button class="danger" onclick="arm(this,'再按一次結束',review)">結束</button>
+    </div>`);
+}
+async function playStep() {
+  const r = run; if (!r) return;
+  clearInterval(r.timer); try { speechSynthesis.cancel(); } catch (e) {}
+  r.paused = false;
+  const tok = ++r.token;
+  renderTest();
+  const s = r.steps[r.i];
+  await wait(700); if (!run || tok !== r.token) return;
+  if (s.kind === 'open') {
+    setStatus('🔊 讀題目中…');
+    await say(s.prompt, s.lang); if (!run || tok !== r.token) return;
+    countdown(s.secs * 1000, tok, true); return;
+  }
+  if (s.kind === 'recite') {
+    setStatus('🔊 …');
+    await say(s.lang === 'zh' ? '背默，開始。' : 'Recitation. Write the passage from memory. Start now.', s.lang); if (!run || tok !== r.token) return;
+    countdown(s.secs * 1000, tok, true); return;
+  }
+  for (let k = 0; k < SET.times; k++) {
+    if (k) { setStatus('（再讀一次）'); await wait(1800); }
+    if (!run || tok !== r.token) return;
+    setStatus('🔊 留心聽…');
+    for (let j = 0; j < s.parts.length; j++) {
+      if (!run || tok !== r.token) return;
+      await say(s.parts[j], s.lang);
+      if (j < s.parts.length - 1) await wait(300);
+    }
+  }
+  if (!run || tok !== r.token) return;
+  if (SET.auto) countdown(s.gap, tok, false); else setStatus('✍️ 寫好就按「下一題」');
+}
+function countdown(ms, tok, timed) {
+  const r = run, s = r.steps[r.i]; let left = ms;
+  setStatus(timed ? '✍️ 開始寫！' : '✍️ 書寫時間');
+  r.timer = setInterval(() => {
+    if (!run || tok !== r.token) { clearInterval(r.timer); return; }
+    if (r.paused) return;
+    left -= 100;
+    const bar = $('#bar'); if (bar) bar.style.width = Math.min(100, 100 - left / ms * 100) + '%';
+    if (timed) { const t = $('#timer'); if (t) t.textContent = fmt(left); }
+    if (left <= 0) {
+      clearInterval(r.timer);
+      if (timed) { setStatus('⏰ 時間到'); say(s.lang === 'zh' ? '時間到，停筆。' : "Time's up. Pens down.", s.lang).then(() => { if (run && tok === r.token) next(); }); }
+      else next();
+    }
+  }, 100);
+}
+function next() { const r = run; if (!r) return; r.i++; if (r.i >= r.steps.length) review(); else playStep(); }
+function replay() { if (run && !run.exam) playStep(); }
+function peek() { const e = $('#peek'); if (e && run) e.textContent = run.steps[run.i].answer; }
+async function hearRecite() {
+  const r = run; if (!r || r.exam) return;
+  const s = r.steps[r.i]; r.paused = true;
+  const b = $('#pauseBtn'); if (b) b.textContent = '▶ 繼續';
+  try { speechSynthesis.cancel(); } catch (e) {}
+  for (const l of s.lines) { if (!run || run !== r) return; await say(l, s.lang); await wait(400); }
+}
+function togglePause() {
+  const r = run; if (!r) return;
+  r.paused = !r.paused;
+  try { r.paused ? speechSynthesis.pause() : speechSynthesis.resume(); } catch (e) {}
+  const b = $('#pauseBtn'); if (b) b.textContent = r.paused ? '▶ 繼續' : '⏸ 暫停';
+}
+
+/* ================= 對答案 ================= */
+let rv = null;
+function review() {
+  const r = run; if (!r) return;
+  clearInterval(r.timer); r.token++; try { speechSynthesis.cancel(); } catch (e) {}
+  keepAwake(false);
+  screen = 'review';
+  const done = r.steps.slice(0, Math.min(r.i + 1, r.steps.length));
+  const items = [], cards = [];
+  done.forEach(s => {
+    if (s.kind === 'say') items.push({ sec: s.sec, lang: s.lang, answer: s.answer });
+    else if (s.kind === 'recite') s.lines.forEach(l => items.push({ sec: s.sec, lang: s.lang, answer: l }));
+    else cards.push(s);
+  });
+  rv = { r, items, cards, wrong: new Set() };
+  renderReview();
+}
+function renderReview() {
+  const { items, cards, wrong } = rv;
+  let h = `<div class="top"><h1>對答案</h1></div><p class="meta">逐個核對默書簿。寫錯的<b>按一下</b>變紅色 ✗，錯題會存入「錯題重默」。</p>`;
+  if (items.length) {
+    h += '<div class="card">';
+    let lastSec = null;
+    items.forEach((it, i) => {
+      if (it.sec !== lastSec) { h += `<h3>${esc(it.sec)}</h3>`; lastSec = it.sec; }
+      h += `<div class="item ${wrong.has(i) ? 'bad' : ''}" onclick="toggleWrong(${i})"><span class="n">${i + 1}</span><span class="ans ${langClass(it.lang)}">${esc(it.answer)}</span><span class="mk">${wrong.has(i) ? '✗' : '✓'}</span></div>`;
+    });
+    h += '</div>';
+  }
+  cards.forEach(s => {
+    h += `<div class="card"><h2>${esc(s.sec)}</h2><div class="meta">${esc(s.prompt)}</div><h3>參考答案（${s.ref.length}）</h3><div class="refs ${langClass(s.lang)}">${s.ref.map(x => `<span>${esc(x)}</span>`).join('') || '<span class="meta">未設定</span>'}</div><div class="meta">數一數寫了幾多個，拼錯的圈出來。</div></div>`;
+  });
+  if (items.length) h += `<div class="card"><div class="score">答對 ${items.length - wrong.size} / ${items.length}</div></div>`;
+  h += `<div class="row"><button class="pri big" onclick="saveResult()">保存結果</button><button onclick="arm(this,'再按一次放棄',home)">不保存</button></div>`;
+  show(h);
+}
+function toggleWrong(i) { rv.wrong.has(i) ? rv.wrong.delete(i) : rv.wrong.add(i); const y = window.scrollY; renderReview(); window.scrollTo(0, y); }
+function saveResult() {
+  const { r, items, wrong } = rv, id = r.set.id;
+  const key = s => s.sec + '|' + s.answer;
+  let m = (DB.mistakes[id] || []).slice();
+  const correctKeys = new Set(items.filter((_, i) => !wrong.has(i)).map(key));
+  if (r.isMistakes) m = m.filter(x => !correctKeys.has(key(x)));
+  const have = new Set(m.map(key));
+  items.forEach((it, i) => { if (wrong.has(i) && !have.has(key(it))) { m.push({ sec: it.sec, lang: it.lang, answer: it.answer }); have.add(key(it)); } });
+  DB.mistakes[id] = m;
+  const hist = (DB.history[id] || []).slice();
+  hist.push({ t: Date.now(), total: items.length, wrong: wrong.size, mistakes: !!r.isMistakes });
+  DB.history[id] = hist.slice(-20);
+  save();
+  toast(items.length ? `已保存：答對 ${items.length - wrong.size} / ${items.length}` : '已保存');
+  home();
+}
+
+/* ================= 編輯 ================= */
+const TEMPLATE = `# 中文默書
+@date 27/10
+@lang zh
+## 第一課 應用詞語 | 詞語
+詞語一
+詞語二
+## 第一課 課文段落 | 段落
+在這裏貼上要默的段落。`;
+function edit(id) {
+  stopRun(); screen = 'edit';
+  const s = id ? DB.sets.find(x => x.id === id) : null;
+  show(`<div class="top"><h1>${id ? '編輯默書' : '新增默書'}</h1></div>
+  <div class="card"><textarea id="src" spellcheck="false" autocapitalize="off" autocorrect="off">${esc(s ? s.src : TEMPLATE)}</textarea>
+  <div class="row"><button class="pri" onclick="saveEdit('${id || ''}')">保存</button><button onclick="home()">取消</button>
+  ${id ? `<button class="danger" onclick="arm(this,'再按一次刪除',()=>delSet('${id}'))">刪除這份默書</button>` : ''}</div></div>
+  <div class="card meta"><b>格式說明</b><ul>
+  <li><code># 標題</code>，例如 <code># English Dictation 4</code></li>
+  <li><code>@date 27/10</code> 默書日期，主頁會按日期排先後</li>
+  <li><code>@lang zh</code> 用粵語讀；<code>@lang en</code> 用英文讀</li>
+  <li><code>## 部分名 | 詞語</code>：下面每行一個詞語</li>
+  <li><code>## 部分名 | 段落</code>：整段貼上，中文按標點、英文按句子逐句讀</li>
+  <li><code>## 部分名 | sentences</code>：每行一句</li>
+  <li><code>## 部分名 | recite 180</code>：背默，不讀出，計時 180 秒</li>
+  <li><code>## 部分名 | open 120</code>：開放題（Part B）。<code>Q:</code> 開頭一行是讀出的題目，其餘是參考答案</li>
+  <li>類型後加 <code>off</code> 表示預設不考；<code>//</code> 開頭的行不會讀出</li></ul></div>`);
+}
+function saveEdit(id) {
+  const src = $('#src').value;
+  const set = parseSet(src);
+  if (!set.sections.some(x => x.items.length || x.type === 'open')) { toast('內容是空的，請最少加一個部分。'); return; }
+  if (id) { const s = DB.sets.find(x => x.id === id); s.src = src; s.updatedAt = Date.now(); }
+  else DB.sets.push({ id: newId(), src, updatedAt: Date.now() });
+  save();
+  toast('已保存' + (set.date ? '：' + fmtDate(set.date) + '默書' : ''));
+  home();
+}
+function delSet(id) { DB.sets = DB.sets.filter(s => s.id !== id); delete DB.mistakes[id]; delete DB.history[id]; save(); toast('已刪除'); home(); }
+
+/* ================= 語音設定 ================= */
+function settings() {
+  stopRun(); screen = 'settings';
+  const opts = (l, cur) => {
+    const list = voicesFor(l), auto = pickVoice(l);
+    if (!list.length) return `<option value="">（這部機未有）</option>`;
+    return `<option value="">自動（${esc(auto ? auto.name : '')}）</option>` + list.map(v => `<option value="${esc(v.name)}" ${v.name === cur ? 'selected' : ''}>${esc(v.name)} · ${esc(v.lang)}</option>`).join('');
+  };
+  show(`<div class="top"><h1>語音設定</h1></div>
+  <div class="card"><h2>粵語語音（中文默書）</h2><select id="vZh">${opts('zh', SET.vZh)}</select>
+  <div class="row"><button onclick="testV('zh')">🔊 試聽</button></div></div>
+  <div class="card"><h2>English voice</h2><select id="vEn">${opts('en', SET.vEn)}</select>
+  <div class="row"><button onclick="testV('en')">🔊 Test</button></div></div>
+  <div class="card"><h2>語速</h2><input type="range" id="rate" min="0.6" max="1.2" step="0.05" value="${SET.rate}">
+  <div class="meta" id="rateLbl">${SET.rate}（老師一般讀得比平時慢，0.8–0.9 較接近）</div></div>
+  <div class="card meta"><b>iPad 安裝粵語語音（只需做一次）</b><ul>
+  <li>設定 → 輔助功能 → 朗讀內容 → 聲音 → 中文 → <b>粵語</b></li>
+  <li>選「善怡」，有「增強／優化」版本就下載，音質較好</li>
+  <li>下載完把這個 App 完全關掉再打開，按上面「試聽」</li></ul></div>
+  <div class="row"><button class="pri" onclick="saveSettings()">保存</button><button onclick="home()">返回</button></div>`);
+  $('#rate').oninput = e => { $('#rateLbl').textContent = e.target.value; };
+}
+function readSettingsForm() { SET.vZh = $('#vZh').value; SET.vEn = $('#vEn').value; SET.rate = +$('#rate').value; }
+function testV(l) { readSettingsForm(); try { speechSynthesis.cancel(); } catch (e) {} say(l === 'zh' ? '誰知狐狸這個狡猾的傢伙，糊塗的烏鴉又被騙了。' : 'Ricky is fast. Peter is faster and stronger.', l); }
+function saveSettings() { readSettingsForm(); savePrefs(); toast('已保存'); home(); }
+
+/* 離線使用：第一次打開後，沒有網絡也能用 */
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+}
+
+home();
+</script>
+</body>
+</html>
